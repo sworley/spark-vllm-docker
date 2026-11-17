@@ -3,6 +3,8 @@
 build-metadata.yaml
 .DS_STORE
 
+cluster-errors.*
+
 # Python bytecode and tool caches
 **/__pycache__/
 **/*.py[cod]
