@@ -19,7 +19,10 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=sworley
+# NOTE: this is a systemd USER service (systemctl --user). Do NOT set User=/
+# Group= here: the user manager already runs as 'sworley'. Setting User= makes
+# systemd try to resolve supplementary groups, which a user manager is not
+# permitted to do -> exit status 216/GROUP ("Operation not permitted").
 WorkingDirectory=/home/sworley/files/repos/github.com/sworley/spark-vllm-docker
 # systemd units strip the login PATH; give it python3 (incl. pyenv shims),
 # ssh, docker, and the common bins the launcher/run-recipe need.
