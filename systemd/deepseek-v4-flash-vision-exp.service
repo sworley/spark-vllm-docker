@@ -1,0 +1,37 @@
+# systemd user unit — DeepSeek V4 Flash Vision Exp (2-node tensor-parallel vLLM)
+#
+# Deploy on the HEAD node (worley-ai / spark-78c4). Install with:
+#   cp systemd/deepseek-v4-flash-vision-exp.service ~/.config/systemd/user/
+#   loginctl enable-linger sworley
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now deepseek-v4-flash-vision-exp.service
+#
+# The head unit is the single orchestrator: 'stop' (and the trap in
+# start-vllm.sh) invokes stop-vllm.sh -> launch-cluster.sh stop, which reads
+# the pinned .env (CLUSTER_NODES=10.20.0.11,10.20.0.12) and stops BOTH the
+# head and the tensor-parallel worker (over ssh).
+
+[Unit]
+Description=DeepSeek V4 Flash Vision Exp - 2-node tensor-parallel vLLM
+Documentation=file:/home/sworley/files/repos/github.com/sworley/spark-vllm-docker/docs/AGENT_RUNBOOK.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=sworley
+WorkingDirectory=/home/sworley/files/repos/github.com/sworley/spark-vllm-docker
+# systemd units strip the login PATH; give it python3 (incl. pyenv shims),
+# ssh, docker, and the common bins the launcher/run-recipe need.
+Environment=PATH=/usr/local/bin:/usr/bin:/bin:/home/sworley/.pyenv/shims:/home/sworley/.pyenv/bin
+Environment=HOME=/home/sworley
+ExecStart=/home/sworley/files/repos/github.com/sworley/spark-vllm-docker/start-vllm.sh
+ExecStop=/home/sworley/files/repos/github.com/sworley/spark-vllm-docker/stop-vllm.sh
+# stop does docker-stop on head + ssh docker-stop on the worker; allow time.
+TimeoutStopSec=120
+# on-failure (not always) so a manual stop isn't fought by the unit.
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
