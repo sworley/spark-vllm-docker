@@ -23,7 +23,7 @@ defaults:
   tensor_parallel: 2
   # Leave room for host and distributed-worker allocations in Spark's shared RAM.
   gpu_memory_utilization: 0.8
-  max_model_len: auto
+  max_model_len: 131072
   block_size: 256
   max_num_seqs: 8
   max_num_batched_tokens: 8192
